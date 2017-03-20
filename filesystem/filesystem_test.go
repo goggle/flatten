@@ -46,7 +46,6 @@ func TestFilesystemOne(t *testing.T) {
 
 	// Add nested folder to file system
 	err := fs.MkDir("/home/goggle/Downloads/test")
-	// fmt.Println(fs)
 
 	noErrorExpected(t, err)
 	dirs = fs.Dirs()
@@ -105,6 +104,54 @@ func TestFilesystemOne(t *testing.T) {
 		t.Errorf("Copy (directory check): Expected %v, got %v", expected, dirs)
 	}
 
+	// Check GetFiles with includeBaseFiles:
+	fis, _ := fs.GetFiles("/home/goggle/Downloads", true)
+	expected = []string{"movie.mp4", "lichess.tar.gz", "Bang.mp4"}
+	fisNames := []string{}
+	for _, fi := range fis {
+		fisNames = append(fisNames, fi.Name())
+	}
+	if !matchLists(fisNames, expected) {
+		t.Errorf("GetFiles with includeBaseFiles: Expected %v, got %v", expected, fisNames)
+	}
+
+	// Check GetFiles without includeBasefiles:
+	fis, _ = fs.GetFiles("/home/goggle/Downloads", false)
+	expected = []string{"lichess.tar.gz", "Bang.mp4"}
+	fisNames = []string{}
+	for _, fi := range fis {
+		fisNames = append(fisNames, fi.Name())
+	}
+	if !matchLists(fisNames, expected) {
+		t.Errorf("GetFiles without includeBaseFiles: Expected %v, got %v", expected, fisNames)
+	}
+
+	// Check IsRegularFile:
+	isFile := fs.IsRegularFile("/home/goggle/Downloads/movie.mp4")
+	expectedIsFile := true
+	if isFile != expectedIsFile {
+		t.Errorf("IsRegularFile: Expected %v, got %v", expectedIsFile, isFile)
+	}
+
+	isFile = fs.IsRegularFile("/home/goggle/Downloads")
+	expectedIsFile = false
+	if isFile != expectedIsFile {
+		t.Errorf("IsRegularFile: Expected %v, got %v", expectedIsFile, isFile)
+	}
+
+	// Check IsDirectory:
+	isDirectory := fs.IsDirectory("/home/goggle/Downloads/movie.mp4")
+	expectedIsDirectory := false
+	if isDirectory != expectedIsDirectory {
+		t.Errorf("IsDirectory: Expected %v, got %v", expectedIsDirectory, isDirectory)
+	}
+
+	isDirectory = fs.IsDirectory("/home/goggle/Downloads/")
+	expectedIsDirectory = true
+	if isDirectory != expectedIsDirectory {
+		t.Errorf("IsDirectory: Expected %v, got %v", expectedIsDirectory, isDirectory)
+	}
+
 	// Move a file:
 	err = fs.Move("/home/goggle/Downloads/test/lichess.tar.gz", "/home/goggle/Downloads/chess.tar.gz")
 	noErrorExpected(t, err)
@@ -161,9 +208,9 @@ func TestFilesystemOne(t *testing.T) {
 	noErrorExpected(t, err)
 	dirs = fs.Dirs()
 	expected = []string{"/"}
-	// if !matchLists(dirs, expected) {
-	// 	t.Errorf("RemoveDirectoy: Expected %v, got %v", expected, dirs)
-	// }
+	if !matchLists(dirs, expected) {
+		t.Errorf("RemoveDirectoy: Expected %v, got %v", expected, dirs)
+	}
 }
 
 func TestDummyFile(t *testing.T) {

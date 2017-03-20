@@ -158,6 +158,22 @@ func (fs Filesystem) RealFiles() []string {
 }
 
 // interface function
+func (fs Filesystem) GetFiles(dir string, includeBaseFiles bool) ([]osabstraction.FileInfo, error) {
+	files := []osabstraction.FileInfo{}
+	dir = path.Clean(dir)
+	for _, v := range fs {
+		if !v.IsDir() {
+			if v.Directory() == dir && includeBaseFiles {
+				files = append(files, v)
+			} else if v.Directory() != dir && strings.HasPrefix(v.FullPath(), dir) {
+				files = append(files, v)
+			}
+		}
+	}
+	return files, nil
+}
+
+// interface function
 func (fs Filesystem) Stat(name string) (osabstraction.FileInfo, error) {
 	cleanPath := path.Clean(name)
 	df, exists := fs[cleanPath]
@@ -170,6 +186,24 @@ func (fs Filesystem) Stat(name string) (osabstraction.FileInfo, error) {
 // interface function
 func (fs Filesystem) IsNotExists(err error) bool {
 	if err != nil {
+		return true
+	}
+	return false
+}
+
+// interface function
+func (fs Filesystem) IsRegularFile(p string) bool {
+	df, exists := fs[path.Clean(p)]
+	if exists && !df.IsDir() {
+		return true
+	}
+	return false
+}
+
+// interface function
+func (fs Filesystem) IsDirectory(p string) bool {
+	df, exists := fs[path.Clean(p)]
+	if exists && df.IsDir() {
 		return true
 	}
 	return false

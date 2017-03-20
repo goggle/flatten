@@ -1,6 +1,8 @@
 package osabstraction
 
 import (
+	"errors"
+	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -12,8 +14,11 @@ type OSWrapper interface {
 	// Move(src, dst FileInfo) error
 	Copy(src, dst string) error
 	Move(src, dst string) error
-	Stat(name string) (FileInfo, error)
-	IsNotExist(err error) bool
+	// Stat(name string) (FileInfo, error)
+	// IsNotExist(err error) bool
+	GetFiles(dir string, includeBaseFiles bool) ([]FileInfo, error)
+	IsRegularFile(p string) bool
+	IsDirectory(p string) bool
 }
 
 type FileInfo interface {
@@ -75,4 +80,70 @@ func (f File) Level() int {
 		return 0
 	}
 	return strings.Count(fp, "/")
+}
+
+type RealOS struct{}
+
+func (ros RealOS) Copy(src, dst string) error {
+	// TODO: implement this!
+	sourceFile := File(src)
+	stat, err := ros.Stat(src)
+	if err != nil {
+		return errors.New(src + " does not exist in file system")
+	}
+	if stat.IsDir() {
+		return errors.New(src + " is a directory")
+	}
+	stat, err = ros.Stat(dst)
+	if err == nil {
+		return errors.New(dst + " already exists in file system")
+	}
+	in, err := os.Open(sourceFile.FullPath())
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	_, err = io.Copy(in, out)
+	cerr := out.Close()
+	if err != nil {
+		return err
+	}
+	return cerr
+}
+
+func (ros RealOS) Move(src, dst string) error {
+	// TODO: implement this!
+	return nil
+}
+
+func (ros RealOS) Stat(name string) (FileInfo, error) {
+	// TODO
+	return nil, nil
+}
+
+func (ros RealOS) IsNotExist(err error) bool {
+	return os.IsNotExist(err)
+}
+
+func (ros RealOS) GetFiles(dir string, includeBaseFiles bool) ([]FileInfo, error) {
+	return nil, nil
+	// files := []os.FileInfo{}
+	// filepath.Walk(dir, func(p string, info os.FileInfo, err error) error {
+	// 	if !info.IsDir() {
+	// 		if !includeBaseFiles {
+	// 			if path.Dir(p) != path.Clean(dir) {
+	// 				files = append(files, info)
+	// 			}
+	// 		} else {
+	// 			files = append(files, info)
+	// 		}
+	// 	}
+	// 	return nil
+	// })
+	// return []File{}, nil
 }

@@ -26,17 +26,6 @@ func getNestedFileInfo(source string, includeBaseFiles bool) []os.FileInfo {
 	return files
 }
 
-// func generateConflictMap(existingFiles []os.FileInfo, nestedFiles []os.FileInfo) map[string]int {
-// 	conflictMap := map[string]int{}
-// 	for _, file := range existingFiles {
-// 		conflictMap[file.Name()]++
-// 	}
-// 	for _, file := range nestedFiles {
-// 		conflictMap[file.Name()]++
-// 	}
-// 	return conflictMap
-// }
-
 func countFileNames(files []os.FileInfo) map[string]int {
 	countMap := map[string]int{}
 	for _, file := range files {
@@ -50,13 +39,8 @@ func evaluateAppendixLength(destination string, filename string, occurences int)
 	minNumberDigits := len(fmt.Sprintf("%v", occurences))
 	numberDigits := minNumberDigits
 	for {
-		// base := baseName(filename)
 		works := true
 		for i := 1; i <= occurences; i++ {
-			// nStr := fmt.Sprintf("%v", numberDigits)
-			// numberExt := fmt.Sprintf("%0"+nStr+"v", i)
-			// fname := base + "_" + numberExt + path.Ext(filename)
-			// fullpath := filepath.Join(destination, fname)
 			fname := generateFilename(filename, i, numberDigits)
 			fullpath := filepath.Join(destination, fname)
 			if _, err := os.Stat(fullpath); os.IsNotExist(err) {
@@ -108,10 +92,12 @@ func Flatten(source string, destination string, copyOnly bool, includeBaseFiles 
 	return nil
 }
 
+// TODO: remove
 func copy(source string, destination string) error {
 	return nil
 }
 
+// TODO: remove
 func move(source string, destination string) error {
 	return nil
 }
