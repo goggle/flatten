@@ -3,7 +3,6 @@ package flatten
 import (
 	"errors"
 	"fmt"
-	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -12,22 +11,22 @@ import (
 )
 
 // This is already implemented in the osabstraction.OSWrapper interface
-func getNestedFileInfo(source string, includeBaseFiles bool) []os.FileInfo {
-	files := []os.FileInfo{}
-	filepath.Walk(source, func(p string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
-			if !includeBaseFiles {
-				if path.Dir(p) != path.Clean(source) {
-					files = append(files, info)
-				}
-			} else {
-				files = append(files, info)
-			}
-		}
-		return nil
-	})
-	return files
-}
+// func getNestedFileInfo(source string, includeBaseFiles bool) []os.FileInfo {
+// 	files := []os.FileInfo{}
+// 	filepath.Walk(source, func(p string, info os.FileInfo, err error) error {
+// 		if !info.IsDir() {
+// 			if !includeBaseFiles {
+// 				if path.Dir(p) != path.Clean(source) {
+// 					files = append(files, info)
+// 				}
+// 			} else {
+// 				files = append(files, info)
+// 			}
+// 		}
+// 		return nil
+// 	})
+// 	return files
+// }
 
 // func countFileNames(files []os.FileInfo) map[string]int {
 // 	countMap := map[string]int{}
