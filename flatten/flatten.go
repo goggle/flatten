@@ -58,9 +58,6 @@ func evaluateAppendixLength(destination string, filename string, occurences int,
 		for i := 1; i <= occurences; i++ {
 			fname := generateFilename(filename, i, numberDigits)
 			fullpath := filepath.Join(destination, fname)
-			// if _, err := os.Stat(fullpath); os.IsNotExist(err) {
-			// 	continue
-			// }
 			if !osw.Exists(fullpath) {
 				continue
 			}

@@ -217,6 +217,25 @@ func (fs Filesystem) Exists(p string) bool {
 	return false
 }
 
+func (fs Filesystem) Equal(f Filesystem) bool {
+	if len(fs) != len(f) {
+		return false
+	}
+	for k, v := range fs {
+		vv, ok := f[k]
+		if !ok {
+			return false
+		}
+		// NOTE: in our file system (which is only used for simulation purposes),
+		// two files are considered as equal, if they have the same path and
+		// are of the same type (i.e. either regular file or directory)
+		if v.FullPath() != vv.FullPath() || v.IsDir() != vv.IsDir() {
+			return false
+		}
+	}
+	return true
+}
+
 type DummyFile struct {
 	Path        string
 	IsDirectory bool

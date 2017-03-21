@@ -258,3 +258,53 @@ func TestDummyFile(t *testing.T) {
 		t.Errorf("Level: Expected %v, got %v", expectedLevel, level)
 	}
 }
+
+func TestEqual(t *testing.T) {
+	fs1 := filesystem.Filesystem{}
+	fs2 := filesystem.Filesystem{}
+	fs1.Init()
+	fs2.Init()
+
+	expected := true
+	result := fs1.Equal(fs2)
+	if result != expected {
+		t.Errorf("Equal: expected %v, got %v", expected, result)
+	}
+
+	fs1.MkDir("/tmp")
+	expected = false
+	result = fs1.Equal(fs2)
+	if result != expected {
+		t.Errorf("Equal: expected %v, got %v", expected, result)
+	}
+
+	fs2.MkDir("/tmp")
+	expected = true
+	result = fs1.Equal(fs2)
+	if result != expected {
+		t.Errorf("Equal: expected %v, got %v", expected, result)
+	}
+
+	fs2.CreateFile("/tmp/hello.txt")
+	expected = false
+	result = fs1.Equal(fs2)
+	if result != expected {
+		t.Errorf("Equal: expected %v, got %v", expected, result)
+	}
+
+	fs1.CreateFile("/tmp/hello.mp4")
+	expected = false
+	result = fs1.Equal(fs2)
+	if result != expected {
+		t.Errorf("Equal: expected %v, got %v", expected, result)
+	}
+
+	fs1.CreateFile("/tmp/hello.txt")
+	fs2.CreateFile("/tmp/hello.mp4")
+	expected = true
+	result = fs1.Equal(fs2)
+	if result != expected {
+		t.Errorf("Equal: expected %v, got %v", expected, result)
+	}
+
+}
