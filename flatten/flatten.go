@@ -45,6 +45,11 @@ func countFileNames(files []osabstraction.FileInfo) map[string]int {
 }
 
 func evaluateAppendixLength(destination string, filename string, occurences int, osw osabstraction.OSWrapper) int {
+	if occurences == 1 {
+		if !osw.Exists(filepath.Join(destination, filename)) {
+			return 0
+		}
+	}
 	// TODO: Add maximal length of occurences and return error, if this number is exceeded
 	minNumberDigits := len(fmt.Sprintf("%v", occurences))
 	numberDigits := minNumberDigits
@@ -72,6 +77,9 @@ func evaluateAppendixLength(destination string, filename string, occurences int,
 }
 
 func generateFilename(oldFilename string, index int, length int) string {
+	if length == 0 {
+		return oldFilename
+	}
 	lengthString := fmt.Sprintf("%v", length)
 	numberExt := fmt.Sprintf("%0"+lengthString+"v", index)
 	base := baseName(oldFilename)

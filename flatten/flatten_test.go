@@ -1,6 +1,7 @@
 package flatten
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/goggle/flatten/filesystem"
@@ -60,5 +61,62 @@ func TestCountFileNames(t *testing.T) {
 		} else if tv != v {
 			t.Errorf("countFileNames(key = %v): Expected %v, got %v.", k, v, tv)
 		}
+	}
+}
+
+func TestEvaluateAppendixLength(t *testing.T) {
+	fs := filesystem.Filesystem{}
+	fs.Init()
+	fs.MkDir("/tmp/a")
+	fs.CreateFile("/tmp/a/hello")
+
+	expected := 0
+	result := evaluateAppendixLength("/tmp", "hello", 1, fs)
+	if expected != result {
+		t.Errorf("evaluateAppendixLength: expected %v, got %v", expected, result)
+	}
+
+	fs.MkDir("/tmp/b")
+	fs.CreateFile("/tmp/b/hello")
+	expected = 1
+	result = evaluateAppendixLength("/tmp", "hello", 2, fs)
+	if expected != result {
+		t.Errorf("evaluateAppendixLength: expected %v, got %v", expected, result)
+	}
+
+	for i := 0; i < 15; i++ {
+		stri := fmt.Sprintf("%v", i)
+		fs.MkDir("/tmp/c" + stri)
+		fs.CreateFile("/tmp/c" + stri + "/hello")
+	}
+	expected = 2
+	result = evaluateAppendixLength("/tmp", "hello", 17, fs)
+	if expected != result {
+		t.Errorf("evaluateAppendixLength: expected %v, got %v", expected, result)
+	}
+
+	for i := 0; i < 83; i++ {
+		stri := fmt.Sprintf("%v", i)
+		fs.MkDir("/tmp/d" + stri)
+		fs.CreateFile("/tmp/d" + stri + "/hello")
+	}
+	expected = 3
+	result = evaluateAppendixLength("/tmp", "hello", 100, fs)
+	if expected != result {
+		t.Errorf("evaluateAppendixLength: expected %v, got %v", expected, result)
+	}
+
+	fs.CreateFile("/tmp/hello_001")
+	expected = 4
+	result = evaluateAppendixLength("/tmp", "hello", 100, fs)
+	if expected != result {
+		t.Errorf("evaluateAppendixLength: expected %v, got %v", expected, result)
+	}
+
+	fs.CreateFile("/tmp/hello_0100")
+	expected = 5
+	result = evaluateAppendixLength("/tmp", "hello", 100, fs)
+	if expected != result {
+		t.Errorf("evaluateAppendixLength: expected %v, got %v", expected, result)
 	}
 }
