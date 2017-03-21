@@ -209,6 +209,14 @@ func (fs Filesystem) IsDirectory(p string) bool {
 	return false
 }
 
+// interface function
+func (fs Filesystem) Exists(p string) bool {
+	if fs.IsRegularFile(p) || fs.IsDirectory(p) {
+		return true
+	}
+	return false
+}
+
 type DummyFile struct {
 	Path        string
 	IsDirectory bool

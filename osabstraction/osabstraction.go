@@ -19,6 +19,7 @@ type OSWrapper interface {
 	GetFiles(dir string, includeBaseFiles bool) ([]FileInfo, error)
 	IsRegularFile(p string) bool
 	IsDirectory(p string) bool
+	Exists(p string) bool
 }
 
 type FileInfo interface {
