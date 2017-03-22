@@ -119,27 +119,45 @@ func (ros RealOS) Move(src, dst string) error {
 }
 
 func (ros RealOS) GetFiles(dir string, includeBaseFiles bool) ([]FileInfo, error) {
-	// TODO: implement this!
-	return nil, nil
-	// files := []os.FileInfo{}
-	// filepath.Walk(dir, func(p string, info os.FileInfo, err error) error {
-	// 	if !info.IsDir() {
-	// 		if !includeBaseFiles {
-	// 			if path.Dir(p) != path.Clean(dir) {
-	// 				files = append(files, info)
-	// 			}
-	// 		} else {
-	// 			files = append(files, info)
-	// 		}
-	// 	}
-	// 	return nil
-	// })
-	// return []File{}, nil
+	files := []FileInfo{}
+	err := filepath.Walk(dir, func(p string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			if !includeBaseFiles {
+				if path.Dir(p) != path.Clean(dir) {
+					files = append(files, File(p))
+				}
+			} else {
+				files = append(files, File(p))
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return files, nil
 }
 
 func (ros RealOS) GetDirectories(dir string) ([]FileInfo, error) {
-	// TODO: implement this!
-	return nil, nil
+	dirs := []FileInfo{}
+	err := filepath.Walk(dir, func(p string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			if path.Clean(p) != path.Clean(dir) {
+				dirs = append(dirs, File(p))
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return dirs, nil
 }
 
 func (ros RealOS) IsRegularFile(p string) bool {
@@ -168,6 +186,28 @@ func (ros RealOS) Exists(p string) bool {
 }
 
 func (ros RealOS) RemoveSubDirectories(p string) error {
-	// TODO: implement this
+	for {
+		subDirectories, err := ros.GetDirectories(p)
+		if err != nil {
+			return err
+		}
+		if len(subDirectories) == 0 {
+			break
+		}
+		changed := false
+		for _, sd := range subDirectories {
+			ssd, err := ros.GetDirectories(sd.FullPath())
+			if err != nil {
+				return err
+			}
+			if len(ssd) == 0 {
+				os.Remove(sd.FullPath())
+				changed = true
+			}
+		}
+		if !changed {
+			return errors.New("could not remove all the subdirectories in " + path.Clean(p))
+		}
+	}
 	return nil
 }
