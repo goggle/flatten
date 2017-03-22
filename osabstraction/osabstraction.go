@@ -84,33 +84,37 @@ func (f File) Level() int {
 type RealOS struct{}
 
 func (ros RealOS) Copy(src, dst string) error {
-	sourceFile := File(src)
-	stat, err := os.Stat(src)
-	if err != nil {
+	if !ros.Exists(src) {
 		return errors.New(src + " does not exist in file system")
-	}
-	if stat.IsDir() {
+	} else if ros.IsDirectory(src) {
 		return errors.New(src + " is a directory")
 	}
-	stat, err = os.Stat(dst)
-	if err == nil {
+	if ros.Exists(dst) {
 		return errors.New(dst + " already exists in file system")
 	}
-	in, err := os.Open(sourceFile.FullPath())
+	in, err := os.Open(src)
 	if err != nil {
 		return err
 	}
 	defer in.Close()
+
 	out, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
 	defer out.Close()
-	_, err = io.Copy(in, out)
-	cerr := out.Close()
+
+	_, err = io.Copy(out, in)
 	if err != nil {
 		return err
 	}
+
+	err = out.Sync()
+	if err != nil {
+		return err
+	}
+
+	cerr := out.Close()
 	return cerr
 }
 
