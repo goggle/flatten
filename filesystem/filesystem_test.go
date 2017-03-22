@@ -306,5 +306,4 @@ func TestEqual(t *testing.T) {
 	if result != expected {
 		t.Errorf("Equal: expected %v, got %v", expected, result)
 	}
-
 }

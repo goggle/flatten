@@ -10,16 +10,14 @@ import (
 )
 
 type OSWrapper interface {
-	// Copy(src, dst FileInfo) error
-	// Move(src, dst FileInfo) error
 	Copy(src, dst string) error
 	Move(src, dst string) error
-	// Stat(name string) (FileInfo, error)
-	// IsNotExist(err error) bool
 	GetFiles(dir string, includeBaseFiles bool) ([]FileInfo, error)
+	GetDirectories(dir string) ([]FileInfo, error)
 	IsRegularFile(p string) bool
 	IsDirectory(p string) bool
 	Exists(p string) bool
+	RemoveSubDirectories(p string) error
 }
 
 type FileInfo interface {

@@ -120,3 +120,162 @@ func TestEvaluateAppendixLength(t *testing.T) {
 		t.Errorf("evaluateAppendixLength: expected %v, got %v", expected, result)
 	}
 }
+
+func TestFlattenOne(t *testing.T) {
+	// Test copying with different source and destination:
+	fs := filesystem.Filesystem{}
+	fs.Init()
+	fs.MkDir("/tmp/a")
+	fs.MkDir("/tmp/a/aa")
+	fs.MkDir("/tmp/b")
+	fs.MkDir("/tmp/c")
+	fs.MkDir("/home/goggle/Downloads")
+
+	fs.CreateFile("/home/goggle/Downloads/hello.txt")
+	fs.CreateFile("/tmp/a/hello.txt")
+	fs.CreateFile("/tmp/b/hello.txt")
+	fs.CreateFile("/tmp/c/world.zip")
+	fs.CreateFile("/tmp/a/aa/testFile.rar")
+
+	err := Flatten(fs["/tmp"], fs["/home/goggle/Downloads"], fs, true, false)
+	if err != nil {
+		t.Errorf("Flatten: no error expected, got %v", err)
+	}
+
+	expectedFs := filesystem.Filesystem{}
+	expectedFs.Init()
+	expectedFs.MkDir("/tmp/a")
+	expectedFs.MkDir("/tmp/a/aa")
+	expectedFs.MkDir("/tmp/b")
+	expectedFs.MkDir("/tmp/c")
+	expectedFs.MkDir("/home/goggle/Downloads")
+
+	expectedFs.CreateFile("/home/goggle/Downloads/hello.txt")
+	expectedFs.CreateFile("/tmp/a/hello.txt")
+	expectedFs.CreateFile("/tmp/b/hello.txt")
+	expectedFs.CreateFile("/tmp/c/world.zip")
+	expectedFs.CreateFile("/tmp/a/aa/testFile.rar")
+
+	expectedFs.CreateFile("/home/goggle/Downloads/hello_1.txt")
+	expectedFs.CreateFile("/home/goggle/Downloads/hello_2.txt")
+	expectedFs.CreateFile("/home/goggle/Downloads/world.zip")
+	expectedFs.CreateFile("/home/goggle/Downloads/testFile.rar")
+
+	if !fs.Equal(expectedFs) {
+		t.Errorf("Flatten: expected %v, got %v", expectedFs, fs)
+	}
+
+	// Test moving with different source and destination
+	fs = filesystem.Filesystem{}
+	fs.Init()
+	fs.MkDir("/tmp/a")
+	fs.MkDir("/tmp/a/aa")
+	fs.MkDir("/tmp/b")
+	fs.MkDir("/tmp/c")
+	fs.MkDir("/home/goggle/Downloads")
+
+	fs.CreateFile("/home/goggle/Downloads/hello.txt")
+	fs.CreateFile("/tmp/a/hello.txt")
+	fs.CreateFile("/tmp/b/hello.txt")
+	fs.CreateFile("/tmp/c/world.zip")
+	fs.CreateFile("/tmp/a/aa/testFile.rar")
+
+	err = Flatten(fs["/tmp"], fs["/home/goggle/Downloads"], fs, false, false)
+	if err != nil {
+		t.Errorf("Flatten: no error expected, got %v", err)
+	}
+
+	expectedFs = filesystem.Filesystem{}
+	expectedFs.Init()
+	expectedFs.MkDir("/home/goggle/Downloads")
+	expectedFs.MkDir("/tmp")
+
+	expectedFs.CreateFile("/home/goggle/Downloads/hello.txt")
+	expectedFs.CreateFile("/home/goggle/Downloads/hello_1.txt")
+	expectedFs.CreateFile("/home/goggle/Downloads/hello_2.txt")
+	expectedFs.CreateFile("/home/goggle/Downloads/world.zip")
+	expectedFs.CreateFile("/home/goggle/Downloads/testFile.rar")
+
+	if !fs.Equal(expectedFs) {
+		t.Errorf("Flatten: expected %v, got %v", expectedFs, fs)
+	}
+}
+
+func TestFlattenTwo(t *testing.T) {
+	fs := filesystem.Filesystem{}
+	fs.Init()
+	fs.MkDir("/home/goggle/Downloads/songs")
+	for i := 1; i <= 222; i++ {
+		stri := fmt.Sprintf("%v", i)
+		fs.MkDir("/home/goggle/Downloads/songs/tmp" + stri)
+		fs.CreateFile("/home/goggle/Downloads/songs/tmp" + stri + "/song.flac")
+	}
+	err := Flatten(fs["/home/goggle/Downloads"], fs["/home/goggle/Downloads"], fs, false, false)
+	if err != nil {
+		t.Errorf("Flatten: no error expected, got %v", err)
+	}
+
+	expectedFs := filesystem.Filesystem{}
+	expectedFs.Init()
+	expectedFs.MkDir("/home/goggle/Downloads")
+	for i := 1; i <= 222; i++ {
+		fileStr := fmt.Sprintf("/home/goggle/Downloads/song_%03v.flac", i)
+		expectedFs.CreateFile(fileStr)
+	}
+
+	if !fs.Equal(expectedFs) {
+		t.Errorf("Flatten: expected %v, got %v", expectedFs, fs)
+	}
+}
+
+func TestFlattenThree(t *testing.T) {
+	fs := filesystem.Filesystem{}
+	fs.Init()
+	fs.MkDir("/tmp/a")
+	fs.CreateFile("/tmp/blubb.txt")
+	fs.CreateFile("/tmp/a/blubb.txt")
+
+	err := Flatten(fs["/tmp"], fs["/tmp"], fs, true, true)
+	if err != nil {
+		t.Errorf("Flatten: no error expected, got %v", err)
+	}
+
+	expectedFs := filesystem.Filesystem{}
+	expectedFs.Init()
+	expectedFs.MkDir("/tmp/a")
+	expectedFs.CreateFile("/tmp/blubb.txt")
+	expectedFs.CreateFile("/tmp/blubb_1.txt")
+	expectedFs.CreateFile("/tmp/blubb_2.txt")
+	expectedFs.CreateFile("/tmp/a/blubb.txt")
+	if !fs.Equal(expectedFs) {
+		t.Errorf("Flatten: expected %v, got %v", expectedFs, fs)
+	}
+}
+
+func TestFlattenFour(t *testing.T) {
+	fs := filesystem.Filesystem{}
+	fs.Init()
+	fs.MkDir("/tmp/a")
+	fs.CreateFile("/tmp/blubb.txt")
+	fs.CreateFile("/tmp/a/blubb.txt")
+	fs.CreateFile("/tmp/mail.py")
+
+	err := Flatten(fs["/tmp"], fs["/tmp"], fs, false, true)
+	if err != nil {
+		t.Errorf("Flatten: no error expected, got %v", err)
+	}
+
+	// This behavior (moving files including the base files with identical
+	// source and destination path) might look weird at first sight.
+	// This might get changed in the future...
+	expectedFs := filesystem.Filesystem{}
+	expectedFs.Init()
+	expectedFs.MkDir("/tmp")
+	expectedFs.CreateFile("/tmp/blubb_1.txt")
+	expectedFs.CreateFile("/tmp/blubb_2.txt")
+	expectedFs.CreateFile("/tmp/mail_1.py")
+	if !fs.Equal(expectedFs) {
+		t.Errorf("Flatten: expected %v, got %v", expectedFs, fs)
+	}
+
+}

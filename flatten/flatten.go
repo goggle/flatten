@@ -10,32 +10,6 @@ import (
 	"github.com/goggle/flatten/osabstraction"
 )
 
-// This is already implemented in the osabstraction.OSWrapper interface
-// func getNestedFileInfo(source string, includeBaseFiles bool) []os.FileInfo {
-// 	files := []os.FileInfo{}
-// 	filepath.Walk(source, func(p string, info os.FileInfo, err error) error {
-// 		if !info.IsDir() {
-// 			if !includeBaseFiles {
-// 				if path.Dir(p) != path.Clean(source) {
-// 					files = append(files, info)
-// 				}
-// 			} else {
-// 				files = append(files, info)
-// 			}
-// 		}
-// 		return nil
-// 	})
-// 	return files
-// }
-
-// func countFileNames(files []os.FileInfo) map[string]int {
-// 	countMap := map[string]int{}
-// 	for _, file := range files {
-// 		countMap[file.Name()]++
-// 	}
-// 	return countMap
-// }
-
 func countFileNames(files []osabstraction.FileInfo) map[string]int {
 	countMap := map[string]int{}
 	for _, file := range files {
@@ -89,27 +63,6 @@ func baseName(filename string) string {
 	return filename[:j]
 }
 
-// func Flatten(source string, destination string, copyOnly bool, includeBaseFiles bool) error {
-// 	if fi, err := os.Stat(source); os.IsNotExist(err) {
-// 		return errors.New(source + " does not exist")
-// 	} else if !fi.IsDir() {
-// 		return errors.New(source + " is not a directory")
-// 	}
-// 	if fi, err := os.Stat(destination); os.IsNotExist(err) {
-// 		return errors.New(destination + " does not exist")
-// 	} else if !fi.IsDir() {
-// 		return errors.New(destination + "is not a directory")
-// 	}
-//
-// 	files := getNestedFileInfo(source, includeBaseFiles)
-// 	countMap := countFileNames(files)
-// 	indexMap := map[string]int{}
-// 	for key, _ := range countMap {
-// 		indexMap[key] = 1
-// 	}
-// 	return nil
-// }
-
 func Flatten(source, destination osabstraction.FileInfo, osw osabstraction.OSWrapper, copyOnly bool, includeBaseFiles bool) error {
 	if !osw.IsDirectory(source.FullPath()) {
 		return errors.New(source.FullPath() + " is not a directory")
@@ -135,31 +88,29 @@ func Flatten(source, destination osabstraction.FileInfo, osw osabstraction.OSWra
 		name := srcFile.Name()
 		lenAppendix, _ := lenAppendixMap[name]
 		currIndex, _ := currentIndexMap[name]
+		currentIndexMap[name]++
 		newName := generateFilename(name, currIndex, lenAppendix)
 		newNameFullpath := filepath.Join(destination.FullPath(), newName)
 		if copyOnly {
-			fmt.Println("Copying " + srcFile.FullPath() + " to " + newNameFullpath)
+			// fmt.Println("Copying " + srcFile.FullPath() + " to " + newNameFullpath)
 			err := osw.Copy(srcFile.FullPath(), newNameFullpath)
 			if err != nil {
 				return err
 			}
 		} else {
-			fmt.Println("Moving " + srcFile.FullPath() + " to " + newNameFullpath)
+			// fmt.Println("Moving " + srcFile.FullPath() + " to " + newNameFullpath)
 			err := osw.Move(srcFile.FullPath(), newNameFullpath)
 			if err != nil {
 				return err
 			}
 		}
 	}
-	return nil
-}
 
-// TODO: remove
-func copy(source string, destination string) error {
-	return nil
-}
-
-// TODO: remove
-func move(source string, destination string) error {
+	if !copyOnly {
+		err := osw.RemoveSubDirectories(source.FullPath())
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

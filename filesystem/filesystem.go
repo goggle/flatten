@@ -4,6 +4,7 @@ import (
 	"errors"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/goggle/flatten/osabstraction"
@@ -171,6 +172,52 @@ func (fs Filesystem) GetFiles(dir string, includeBaseFiles bool) ([]osabstractio
 		}
 	}
 	return files, nil
+}
+
+// interface function
+func (fs Filesystem) GetDirectories(dir string) ([]osabstraction.FileInfo, error) {
+	files := []osabstraction.FileInfo{}
+	dir = path.Clean(dir)
+	for _, v := range fs {
+		if v.IsDir() {
+			if strings.HasPrefix(v.FullPath(), dir) && v.FullPath() != dir {
+				files = append(files, v)
+			}
+		}
+	}
+	return files, nil
+}
+
+type byLevel []osabstraction.FileInfo
+
+func (bl byLevel) Len() int {
+	return len(bl)
+}
+func (bl byLevel) Swap(i, j int) {
+	bl[i], bl[j] = bl[j], bl[i]
+}
+func (bl byLevel) Less(i, j int) bool {
+	return bl[i].Level() < bl[j].Level()
+}
+
+// interface function
+func (fs Filesystem) RemoveSubDirectories(p string) error {
+	p = filepath.Clean(p)
+	if !fs.IsDirectory(p) {
+		return errors.New(p + " is not a directory")
+	}
+	dirs, err := fs.GetDirectories(p)
+	if err != nil {
+		return err
+	}
+	sort.Sort(byLevel(dirs))
+	for i := len(dirs) - 1; i >= 0; i-- {
+		err := fs.RemoveDirectory(dirs[i].FullPath())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // interface function
