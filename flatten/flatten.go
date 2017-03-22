@@ -10,6 +10,12 @@ import (
 	"github.com/goggle/flatten/osabstraction"
 )
 
+var verbose bool = false
+
+func SetVerbose() {
+	verbose = true
+}
+
 func countFileNames(files []osabstraction.FileInfo) map[string]int {
 	countMap := map[string]int{}
 	for _, file := range files {
@@ -92,13 +98,17 @@ func Flatten(source, destination osabstraction.FileInfo, osw osabstraction.OSWra
 		newName := generateFilename(name, currIndex, lenAppendix)
 		newNameFullpath := filepath.Join(destination.FullPath(), newName)
 		if copyOnly {
-			// fmt.Println("Copying " + srcFile.FullPath() + " to " + newNameFullpath)
+			if verbose {
+				fmt.Println("Copying " + srcFile.FullPath() + " to " + newNameFullpath)
+			}
 			err := osw.Copy(srcFile.FullPath(), newNameFullpath)
 			if err != nil {
 				return err
 			}
 		} else {
-			// fmt.Println("Moving " + srcFile.FullPath() + " to " + newNameFullpath)
+			if verbose {
+				fmt.Println("Moving " + srcFile.FullPath() + " to " + newNameFullpath)
+			}
 			err := osw.Move(srcFile.FullPath(), newNameFullpath)
 			if err != nil {
 				return err
@@ -107,6 +117,9 @@ func Flatten(source, destination osabstraction.FileInfo, osw osabstraction.OSWra
 	}
 
 	if !copyOnly {
+		if verbose {
+			fmt.Println("Removing subdirectories from " + source.FullPath())
+		}
 		err := osw.RemoveSubDirectories(source.FullPath())
 		if err != nil {
 			return err
