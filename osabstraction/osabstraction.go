@@ -115,8 +115,7 @@ func (ros RealOS) Copy(src, dst string) error {
 }
 
 func (ros RealOS) Move(src, dst string) error {
-	// TODO: implement this!
-	return nil
+	return os.Rename(src, dst)
 }
 
 func (ros RealOS) GetFiles(dir string, includeBaseFiles bool) ([]FileInfo, error) {
@@ -144,17 +143,27 @@ func (ros RealOS) GetDirectories(dir string) ([]FileInfo, error) {
 }
 
 func (ros RealOS) IsRegularFile(p string) bool {
-	// TODO implement this!
+	if stat, err := os.Stat(path.Clean(p)); err == nil {
+		if !stat.IsDir() {
+			return true
+		}
+	}
 	return false
 }
 
 func (ros RealOS) IsDirectory(p string) bool {
-	// TODO: implement this!
+	if stat, err := os.Stat(path.Clean(p)); err == nil {
+		if stat.IsDir() {
+			return true
+		}
+	}
 	return false
 }
 
 func (ros RealOS) Exists(p string) bool {
-	// TODO: implement this!
+	if _, err := os.Stat(path.Clean(p)); err == nil {
+		return true
+	}
 	return false
 }
 
