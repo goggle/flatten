@@ -84,16 +84,15 @@ func (f File) Level() int {
 type RealOS struct{}
 
 func (ros RealOS) Copy(src, dst string) error {
-	// TODO: implement this!
 	sourceFile := File(src)
-	stat, err := ros.Stat(src)
+	stat, err := os.Stat(src)
 	if err != nil {
 		return errors.New(src + " does not exist in file system")
 	}
 	if stat.IsDir() {
 		return errors.New(src + " is a directory")
 	}
-	stat, err = ros.Stat(dst)
+	stat, err = os.Stat(dst)
 	if err == nil {
 		return errors.New(dst + " already exists in file system")
 	}
@@ -120,16 +119,8 @@ func (ros RealOS) Move(src, dst string) error {
 	return nil
 }
 
-func (ros RealOS) Stat(name string) (FileInfo, error) {
-	// TODO
-	return nil, nil
-}
-
-func (ros RealOS) IsNotExist(err error) bool {
-	return os.IsNotExist(err)
-}
-
 func (ros RealOS) GetFiles(dir string, includeBaseFiles bool) ([]FileInfo, error) {
+	// TODO: implement this!
 	return nil, nil
 	// files := []os.FileInfo{}
 	// filepath.Walk(dir, func(p string, info os.FileInfo, err error) error {
@@ -145,4 +136,29 @@ func (ros RealOS) GetFiles(dir string, includeBaseFiles bool) ([]FileInfo, error
 	// 	return nil
 	// })
 	// return []File{}, nil
+}
+
+func (ros RealOS) GetDirectories(dir string) ([]FileInfo, error) {
+	// TODO: implement this!
+	return nil, nil
+}
+
+func (ros RealOS) IsRegularFile(p string) bool {
+	// TODO implement this!
+	return false
+}
+
+func (ros RealOS) IsDirectory(p string) bool {
+	// TODO: implement this!
+	return false
+}
+
+func (ros RealOS) Exists(p string) bool {
+	// TODO: implement this!
+	return false
+}
+
+func (ros RealOS) RemoveSubDirectories(p string) error {
+	// TODO: implement this
+	return nil
 }

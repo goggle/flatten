@@ -288,16 +288,6 @@ type DummyFile struct {
 	IsDirectory bool
 }
 
-// type FileInfo interface {
-// 	IsDir() bool
-// 	FullPath() string
-// 	Name() string
-// 	Directory() string
-// 	Ext() string
-// 	BaseName() string
-// 	Level() int
-// }
-
 func (df DummyFile) IsDir() bool {
 	return df.IsDirectory
 }
