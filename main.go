@@ -1,22 +1,66 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path"
 
 	docopt "github.com/docopt/docopt-go"
+	"github.com/goggle/flatten/filesystem"
 	"github.com/goggle/flatten/flatten"
 	"github.com/goggle/flatten/osabstraction"
 )
 
 const version = "0.5"
 
+func ask(question string, defaultYes bool) bool {
+	var defaultString string
+	if defaultYes {
+		defaultString = "[y]/n:"
+	} else {
+		defaultString = "y/[n]:"
+	}
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Printf(question + " " + defaultString + " ")
+	test, _ := reader.ReadString('\n')
+	if defaultYes {
+		if test == "n" || test == "N" || test == "no" || test == "No" {
+			return false
+		}
+		return true
+	}
+	if test == "y" || test == "Y" || test == "yes" || test == "Yes" {
+		return true
+	}
+	return false
+}
+
+func simulate(sourceFI osabstraction.FileInfo, destinationFI osabstraction.FileInfo, copyOnly bool, includeSourceFiles bool) (string, error) {
+	fs := filesystem.Filesystem{}
+	fs.Init()
+	err := fs.AddFromRealFilesystem(sourceFI.FullPath())
+	if err != nil {
+		return "", err
+	}
+	err = fs.AddFromRealFilesystem(destinationFI.FullPath())
+	if err != nil {
+		return "", err
+	}
+	err = flatten.Flatten(sourceFI, destinationFI, fs, copyOnly, includeSourceFiles)
+	if err != nil {
+		return "", err
+	}
+	tree := filesystem.Tree{}
+	tree.Create(destinationFI, fs)
+	return fmt.Sprintf("%v", tree), nil
+}
+
 func main() {
 	usage := `flatten.
 
 Usage:
-  flatten [SOURCE] [DESTINATION] [--include-source-files] [-s | --simulate-only] [-c | --copy-only] [--verbose]
+  flatten [SOURCE] [DESTINATION] [-c | --copy-only] [-f | --force] [--include-source-files] [-s | --simulate-only] [--verbose]
   flatten -h | --help
   flatten -v
 
@@ -27,12 +71,13 @@ Arguments:
   DESTINATION               Optional destination directory (default is current directory).
 
 Options:
-  -h --help                 Show this screen.
-  -v --version              Show version.
+  -c --copy-only            Do not remove anything from the source directory.
+	-f --force                Do not propose a simulation first, immediately execute the command.
   --include-source-files    Include the files which are directly located in the SOURCE directory.
   -s --simulate-only        Do not move or copy any files on the system,
                             just output the expected result.
-  -c --copy-only            Do not remove anything from the source directory.
+	-v --version              Show version.
+	-h --help                 Show this screen.
   --verbose                 Explain what is being done.`
 
 	arguments, _ := docopt.Parse(usage, nil, true, "flatten "+version, false)
@@ -70,13 +115,42 @@ Options:
 	}
 
 	includeSourceFiles := arguments["--include-source-files"].(bool)
-
 	copyOnly := arguments["--copy-only"].(bool)
+	simulateOnly := arguments["--simulate-only"].(bool)
+	force := arguments["--force"].(bool)
 
 	sourceFI := osabstraction.File(path.Clean(source))
 	destinationFI := osabstraction.File(path.Clean(destination))
+
+	if !force && !simulateOnly {
+		res := ask("flatten performs changes on the file system. Do you want to simulate this process first?", true)
+		if !res {
+			os.Exit(0)
+		}
+		force = true
+	}
+
+	treeString, err := simulate(sourceFI, destinationFI, copyOnly, includeSourceFiles)
+	if err != nil {
+		fmt.Println("Could not simulate the process. The following error occured:")
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	fmt.Printf(treeString)
+	if simulateOnly {
+		os.Exit(0)
+	}
+
+	if !force {
+		res := ask("The above changes will be performed. Do you want to continue?", false)
+		if !res {
+			os.Exit(0)
+		}
+	}
+
 	osWrapper := osabstraction.RealOS{}
-	err := flatten.Flatten(sourceFI, destinationFI, osWrapper, copyOnly, includeSourceFiles)
+	err = flatten.Flatten(sourceFI, destinationFI, osWrapper, copyOnly, includeSourceFiles)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		os.Exit(1)

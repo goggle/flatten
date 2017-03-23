@@ -2,6 +2,7 @@ package filesystem
 
 import (
 	"errors"
+	"os"
 	"path"
 	"path/filepath"
 	"sort"
@@ -220,23 +221,41 @@ func (fs Filesystem) RemoveSubDirectories(p string) error {
 	return nil
 }
 
-// interface function
-func (fs Filesystem) Stat(name string) (osabstraction.FileInfo, error) {
-	cleanPath := path.Clean(name)
-	df, exists := fs[cleanPath]
-	if !exists {
-		return nil, errors.New(name + " does not exist in file system")
-	}
-	return df, nil
+func (fs Filesystem) AddFromRealFilesystem(p string) error {
+	p = path.Clean(p)
+	err := filepath.Walk(p, func(path string, fi os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if fi.IsDir() {
+			// FIXME: ignoring errors:
+			fs.MkDir(path)
+		} else {
+			// FIXME: ignoring errors:
+			fs.CreateFile(path)
+		}
+		return nil
+	})
+	return err
 }
 
 // interface function
-func (fs Filesystem) IsNotExists(err error) bool {
-	if err != nil {
-		return true
-	}
-	return false
-}
+// func (fs Filesystem) Stat(name string) (osabstraction.FileInfo, error) {
+// 	cleanPath := path.Clean(name)
+// 	df, exists := fs[cleanPath]
+// 	if !exists {
+// 		return nil, errors.New(name + " does not exist in file system")
+// 	}
+// 	return df, nil
+// }
+
+// interface function
+// func (fs Filesystem) IsNotExists(err error) bool {
+// 	if err != nil {
+// 		return true
+// 	}
+// 	return false
+// }
 
 // interface function
 func (fs Filesystem) IsRegularFile(p string) bool {
