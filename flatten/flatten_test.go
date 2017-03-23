@@ -13,22 +13,22 @@ func TestGenerateFilename(t *testing.T) {
 		i int
 		l int
 	}
-	test_cases := []generateFilenameTestCase{
+	testCases := []generateFilenameTestCase{
 		{"hello", 2, 3},
 		{"myFile", 24, 5},
 		{"movie.mp4", 1, 1},
 		{"song_23.flac", 99, 3},
 	}
-	expected_results := []string{
+	expectedResults := []string{
 		"hello_002",
 		"myFile_00024",
 		"movie_1.mp4",
 		"song_23_099.flac",
 	}
-	for i, tc := range test_cases {
+	for i, tc := range testCases {
 		res := generateFilename(tc.n, tc.i, tc.l)
-		if res != expected_results[i] {
-			t.Errorf("generateFilename: expected %v, got %v", expected_results[i], res)
+		if res != expectedResults[i] {
+			t.Errorf("generateFilename: expected %v, got %v", expectedResults[i], res)
 		}
 	}
 }

@@ -12,7 +12,7 @@ import (
 	"github.com/goggle/flatten/osabstraction"
 )
 
-const version = "0.5"
+const version = "0.8"
 
 func ask(question string, defaultYes bool) bool {
 	var defaultString string
@@ -72,12 +72,12 @@ Arguments:
 
 Options:
   -c --copy-only            Do not remove anything from the source directory.
-	-f --force                Do not propose a simulation first, immediately execute the command.
+  -f --force                Do not propose a simulation first, immediately execute the command.
   --include-source-files    Include the files which are directly located in the SOURCE directory.
   -s --simulate-only        Do not move or copy any files on the system,
                             just output the expected result.
-	-v --version              Show version.
-	-h --help                 Show this screen.
+  -v --version              Show version.
+  -h --help                 Show this screen.
   --verbose                 Explain what is being done.`
 
 	arguments, _ := docopt.Parse(usage, nil, true, "flatten "+version, false)

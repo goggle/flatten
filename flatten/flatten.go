@@ -10,8 +10,10 @@ import (
 	"github.com/goggle/flatten/osabstraction"
 )
 
-var verbose bool = false
+// verbose is the verbosity flag
+var verbose = false
 
+// SetVerbose sets the verbosity flag
 func SetVerbose() {
 	verbose = true
 }
@@ -69,6 +71,7 @@ func baseName(filename string) string {
 	return filename[:j]
 }
 
+// Flatten performs the "flattening" of the directory structure.
 func Flatten(source, destination osabstraction.FileInfo, osw osabstraction.OSWrapper, copyOnly bool, includeBaseFiles bool) error {
 	if !osw.IsDirectory(source.FullPath()) {
 		return errors.New(source.FullPath() + " is not a directory")

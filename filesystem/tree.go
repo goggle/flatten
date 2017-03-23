@@ -8,11 +8,13 @@ import (
 	"github.com/goggle/flatten/osabstraction"
 )
 
+// Tree represents a filesystem tree.
 type Tree struct {
 	node     osabstraction.FileInfo
 	children []*Tree
 }
 
+// Init initializes the filesystem tree with a root node.
 func (t *Tree) Init(fi osabstraction.FileInfo) error {
 	if t.node == nil {
 		t.node = fi
@@ -22,6 +24,10 @@ func (t *Tree) Init(fi osabstraction.FileInfo) error {
 	return errors.New("tree has already been initialized")
 }
 
+// InsertSuccessor inserts a file into the filesyste tree.
+// The filesystem tree already needs to contain all the parrent
+// directories of the file to be inserted, otherwise an error
+// gets returned.
 func (t *Tree) InsertSuccessor(fi osabstraction.FileInfo) error {
 	if t.node == nil {
 		return errors.New("tree has not been initialized")
@@ -61,6 +67,7 @@ func (t *Tree) InsertSuccessor(fi osabstraction.FileInfo) error {
 	return nil
 }
 
+// Count counts the elements in the tree.
 func (t *Tree) Count() int {
 	count := 0
 	var countNodes func(t *Tree)
@@ -90,6 +97,8 @@ func (b byName) Less(i, j int) bool {
 	return b[i].node.Name() < b[j].node.Name()
 }
 
+// Sort sorts tree, so that the names of the elements in the
+// t.children slice are sorted by their string representations.
 func (t *Tree) Sort() {
 	var so func(t *Tree)
 	so = func(t *Tree) {
@@ -101,6 +110,8 @@ func (t *Tree) Sort() {
 	so(t)
 }
 
+// Create automatically creates a filesystem tree only giving an abstract
+// osabstraction.FileInfo root element.
 func (t *Tree) Create(root osabstraction.FileInfo, osw osabstraction.OSWrapper) error {
 	err := t.Init(root)
 	if err != nil {
