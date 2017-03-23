@@ -94,7 +94,6 @@ func (t *Tree) Sort() {
 	var so func(t *Tree)
 	so = func(t *Tree) {
 		sort.Sort(byName(t.children))
-		// sort.Sort(sort.Reverse(byName(t.children)))
 		for _, child := range t.children {
 			so(child)
 		}
@@ -157,74 +156,41 @@ func (t *Tree) Create(root osabstraction.FileInfo, osw osabstraction.OSWrapper) 
 
 func (t Tree) String() string {
 	rootLine := t.node.FullPath() + "\n"
-	// output := ""
-	// var slice []*Tree
-	// for _, el := range t.children {
-	// 	slice = append(slice, el)
-	// }
-	// levels := []int{1}
-	// for len(slice) > 0 {
-	// 	curr := slice[0]
-	// 	slice = slice[1:]
-	// 	currLevel := levels[0]
-	// 	levels = levels[1:]
-	// 	for i := 0; i < currLevel; i++ {
-	// 		output += "────"
-	// 	}
-	// 	output += curr.node.Name() + "\n"
-	// 	for _, child := range curr.children {
-	// 		slice = append([]*Tree{child}, slice...)
-	// 		levels = append([]int{currLevel + 1}, levels...)
-	//
-	// 	}
-	// }
-	// return rootLine + output
-	// return rootLine
 	output := rootLine
-	// var stack []*Tree
-	// for _, el := range t.children {
-	// 	stack = append(stack, el)
-	// }
-	// finished := []bool{false}
-	var traverse func(t *Tree, level int, last bool)
-	traverse = func(t *Tree, level int, last bool) {
-		// block := "│@@@"
-		for i := 0; i < level-1; i++ {
-			// output += block
-			// if finished[i-1] {
-			// 	output += "@@@@"
-			// } else {
-			// 	output += "|@@@"
-			// }
-			output += "|   "
+
+	var traverse func(t *Tree, level int, leaveBlankIndex int, last bool)
+	traverse = func(t *Tree, level int, leaveBlankIndex int, last bool) {
+		leaveBlank := 0
+		for i := level - 1; i > 0; i-- {
+			if i <= leaveBlankIndex {
+				output += "    "
+			} else {
+				output += "│   "
+			}
 		}
 		if !last {
 			output += "├── " + t.node.Name() + "\n"
 		} else {
 			output += "└── " + t.node.Name() + "\n"
-			// finished[level-1] = true
+			leaveBlank = 1
 		}
 		for i, child := range t.children {
 			if i == 0 {
-				// finished = append(finished, false)
 			}
 			if i != len(t.children)-1 {
-				traverse(child, level+1, false)
+				traverse(child, level+1, leaveBlankIndex+leaveBlank, false)
 			} else {
-				traverse(child, level+1, true)
-				// finished = append(finished, false)
+				traverse(child, level+1, leaveBlankIndex+leaveBlank, true)
 			}
 		}
 	}
 
 	for i, child := range t.children {
 		if i != len(t.children)-1 {
-			traverse(child, 1, false)
+			traverse(child, 1, 0, false)
 		} else {
-			traverse(child, 1, true)
+			traverse(child, 1, 0, true)
 		}
-
 	}
-
 	return output
 }

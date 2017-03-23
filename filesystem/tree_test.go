@@ -3,44 +3,55 @@ package filesystem
 import (
 	"fmt"
 	"testing"
-
-	"github.com/goggle/flatten/osabstraction"
 )
 
 func TestTree(t *testing.T) {
 	fs := Filesystem{}
 	fs.Init()
-	fs.MkDir("/tmp/a/b/c")
-	fs.CreateFile("/tmp/a/hello.c")
-	fs.CreateFile("/tmp/a/song.mp3")
-	fs.CreateFile("/tmp/a/watch.mp4")
-	fs.CreateFile("/tmp/a/arrifix.txt")
-	fs.CreateFile("/tmp/a/b/gogol.go")
+	fs.MkDir("/home/goggle/test")
+	fs.MkDir("/home/goggle/test/rust/tree")
+	fs.MkDir("/home/goggle/test/documents/a001/a001")
+	fs.CreateFile("/home/goggle/test/artisan.txt")
+	fs.CreateFile("/home/goggle/test/hello.c")
+	fs.CreateFile("/home/goggle/test/hello.h")
+	fs.CreateFile("/home/goggle/test/railjet_data.txt")
+	fs.CreateFile("/home/goggle/test/documents/cv.pdf")
+	fs.CreateFile("/home/goggle/test/documents/exams.pdf")
+	fs.CreateFile("/home/goggle/test/documents/form.docx")
+	fs.CreateFile("/home/goggle/test/documents/a001/a001/mri_010023.csv")
+	fs.CreateFile("/home/goggle/test/documents/a001/a001/mri_010024.csv")
+	fs.CreateFile("/home/goggle/test/rust/main.rs")
+	fs.CreateFile("/home/goggle/test/rust/ask.rs")
+	fs.CreateFile("/home/goggle/test/rust/tree/tree.rs")
+	fs.CreateFile("/home/goggle/test/rust/tree/doc.txt")
 
-	// tr := Tree{}
-	// tr.Init(fs["/tmp"])
-	// tr.InsertSuccessor(fs["/tmp/a"])
-	// tr.InsertSuccessor(fs["/tmp/a/b"])
-	// tr.InsertSuccessor(fs["/tmp/a/hello.c"])
-	// tr.InsertSuccessor(fs["/tmp/a/song.mp3"])
-	// tr.InsertSuccessor(fs["/tmp/a/watch.mp4"])
-	// tr.InsertSuccessor(fs["/tmp/a/b/c"])
-	// tr.InsertSuccessor(fs["/tmp/a/b/gogol.go"])
-	// tr.InsertSuccessor(fs["/tmp/a/arrifix.txt"])
-	// tr.Sort()
-	// fmt.Printf(tr.String())
-	// tr.Create(fs["/tmp"], fs)
-	// fmt.Printf(tr.String())
-
-	tt := Tree{}
-	osw := osabstraction.RealOS{}
-	root := osabstraction.File("/home/alex/test")
-	err := tt.Create(root, osw)
+	tree := Tree{}
+	err := tree.Create(fs["/home/goggle/test"], fs)
 	if err != nil {
-		fmt.Println(err)
+		t.Errorf("TestTree: No error expected, got %v", err)
 	}
-	fmt.Println(tt.Count())
-	fmt.Println(tt)
-	// fmt.Printf(tt.String())
-	// fmt.Println(tt.children)
+
+	expectedTreeString := `/home/goggle/test
+├── artisan.txt
+├── documents
+│   ├── a001
+│   │   └── a001
+│   │       ├── mri_010023.csv
+│   │       └── mri_010024.csv
+│   ├── cv.pdf
+│   ├── exams.pdf
+│   └── form.docx
+├── hello.c
+├── hello.h
+├── railjet_data.txt
+└── rust
+    ├── ask.rs
+    ├── main.rs
+    └── tree
+        ├── doc.txt
+        └── tree.rs
+`
+	if expectedTreeString != fmt.Sprintf("%v", tree) {
+		t.Errorf("TreeTest: Expected %v, got %v", expectedTreeString, tree)
+	}
 }
