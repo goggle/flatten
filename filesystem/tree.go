@@ -158,11 +158,20 @@ func (t Tree) String() string {
 	rootLine := t.node.FullPath() + "\n"
 	output := rootLine
 
-	var traverse func(t *Tree, level int, leaveBlankIndex int, last bool)
-	traverse = func(t *Tree, level int, leaveBlankIndex int, last bool) {
-		leaveBlank := 0
-		for i := level - 1; i > 0; i-- {
-			if i <= leaveBlankIndex {
+	var elemInList func(list []int, elem int) bool
+	elemInList = func(list []int, elem int) bool {
+		for _, l := range list {
+			if l == elem {
+				return true
+			}
+		}
+		return false
+	}
+
+	var traverse func(t *Tree, level int, leaveBlankIndex []int, last bool)
+	traverse = func(t *Tree, level int, leaveBlankIndex []int, last bool) {
+		for i := 0; i < level-1; i++ {
+			if elemInList(leaveBlankIndex, i) {
 				output += "    "
 			} else {
 				output += "│   "
@@ -172,24 +181,26 @@ func (t Tree) String() string {
 			output += "├── " + t.node.Name() + "\n"
 		} else {
 			output += "└── " + t.node.Name() + "\n"
-			leaveBlank = 1
+			if !elemInList(leaveBlankIndex, level-1) {
+				leaveBlankIndex = append(leaveBlankIndex, level-1)
+			}
 		}
 		for i, child := range t.children {
 			if i == 0 {
 			}
 			if i != len(t.children)-1 {
-				traverse(child, level+1, leaveBlankIndex+leaveBlank, false)
+				traverse(child, level+1, leaveBlankIndex, false)
 			} else {
-				traverse(child, level+1, leaveBlankIndex+leaveBlank, true)
+				traverse(child, level+1, leaveBlankIndex, true)
 			}
 		}
 	}
 
 	for i, child := range t.children {
 		if i != len(t.children)-1 {
-			traverse(child, 1, 0, false)
+			traverse(child, 1, []int{}, false)
 		} else {
-			traverse(child, 1, 0, true)
+			traverse(child, 1, []int{}, true)
 		}
 	}
 	return output

@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestTree(t *testing.T) {
+func TestTreeOne(t *testing.T) {
 	fs := Filesystem{}
 	fs.Init()
 	fs.MkDir("/home/goggle/test")
@@ -28,7 +28,7 @@ func TestTree(t *testing.T) {
 	tree := Tree{}
 	err := tree.Create(fs["/home/goggle/test"], fs)
 	if err != nil {
-		t.Errorf("TestTree: No error expected, got %v", err)
+		t.Errorf("TestTreeOne: No error expected, got %v", err)
 	}
 
 	expectedTreeString := `/home/goggle/test
@@ -52,6 +52,49 @@ func TestTree(t *testing.T) {
         └── tree.rs
 `
 	if expectedTreeString != fmt.Sprintf("%v", tree) {
-		t.Errorf("TreeTest: Expected %v, got %v", expectedTreeString, tree)
+		t.Errorf("TreeTestOne: Expected %v, got %v", expectedTreeString, tree)
+	}
+}
+
+func TestTreeTwo(t *testing.T) {
+	fs := Filesystem{}
+	fs.Init()
+	fs.MkDir("/tmp/flatten/filesystem")
+	fs.MkDir("/tmp/flatten/flatten")
+	fs.MkDir("/tmp/flatten/osabstraction")
+	fs.CreateFile("/tmp/flatten/filesystem/filesystem.go")
+	fs.CreateFile("/tmp/flatten/filesystem/filesystem_test.go")
+	fs.CreateFile("/tmp/flatten/filesystem/tree.go")
+	fs.CreateFile("/tmp/flatten/filesystem/tree_test.go")
+	fs.CreateFile("/tmp/flatten/flatten/flatten.go")
+	fs.CreateFile("/tmp/flatten/flatten/flatten_test.go")
+	fs.CreateFile("/tmp/flatten/license")
+	fs.CreateFile("/tmp/flatten/main.go")
+	fs.CreateFile("/tmp/flatten/osabstraction/osabstraction.go")
+	fs.CreateFile("/tmp/flatten/readme.md")
+
+	tree := Tree{}
+	err := tree.Create(fs["/tmp"], fs)
+	if err != nil {
+		t.Errorf("TestTreeTwo: No error expected, got %v", err)
+	}
+	expectedTreeString := `/tmp
+└── flatten
+    ├── filesystem
+    │   ├── filesystem.go
+    │   ├── filesystem_test.go
+    │   ├── tree.go
+    │   └── tree_test.go
+    ├── flatten
+    │   ├── flatten.go
+    │   └── flatten_test.go
+    ├── license
+    ├── main.go
+    ├── osabstraction
+    │   └── osabstraction.go
+    └── readme.md
+`
+	if expectedTreeString != fmt.Sprintf("%v", tree) {
+		t.Errorf("TreeTestOne: Expected %v, got %v", expectedTreeString, tree)
 	}
 }
