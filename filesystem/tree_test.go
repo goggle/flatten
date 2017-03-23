@@ -34,12 +34,13 @@ func TestTree(t *testing.T) {
 
 	tt := Tree{}
 	osw := osabstraction.RealOS{}
-	root := osabstraction.File("/home/alex/baz")
+	root := osabstraction.File("/home/alex/test")
 	err := tt.Create(root, osw)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(tt.Count())
+	fmt.Println(tt)
 	// fmt.Printf(tt.String())
 	// fmt.Println(tt.children)
 }

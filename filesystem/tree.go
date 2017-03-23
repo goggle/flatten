@@ -93,7 +93,8 @@ func (b byName) Less(i, j int) bool {
 func (t *Tree) Sort() {
 	var so func(t *Tree)
 	so = func(t *Tree) {
-		sort.Sort(sort.Reverse(byName(t.children)))
+		sort.Sort(byName(t.children))
+		// sort.Sort(sort.Reverse(byName(t.children)))
 		for _, child := range t.children {
 			so(child)
 		}
@@ -154,7 +155,7 @@ func (t *Tree) Create(root osabstraction.FileInfo, osw osabstraction.OSWrapper) 
 	return nil
 }
 
-func (t *Tree) String() string {
+func (t Tree) String() string {
 	rootLine := t.node.FullPath() + "\n"
 	// output := ""
 	// var slice []*Tree
@@ -178,5 +179,52 @@ func (t *Tree) String() string {
 	// 	}
 	// }
 	// return rootLine + output
-	return rootLine
+	// return rootLine
+	output := rootLine
+	// var stack []*Tree
+	// for _, el := range t.children {
+	// 	stack = append(stack, el)
+	// }
+	// finished := []bool{false}
+	var traverse func(t *Tree, level int, last bool)
+	traverse = func(t *Tree, level int, last bool) {
+		// block := "│@@@"
+		for i := 0; i < level-1; i++ {
+			// output += block
+			// if finished[i-1] {
+			// 	output += "@@@@"
+			// } else {
+			// 	output += "|@@@"
+			// }
+			output += "|   "
+		}
+		if !last {
+			output += "├── " + t.node.Name() + "\n"
+		} else {
+			output += "└── " + t.node.Name() + "\n"
+			// finished[level-1] = true
+		}
+		for i, child := range t.children {
+			if i == 0 {
+				// finished = append(finished, false)
+			}
+			if i != len(t.children)-1 {
+				traverse(child, level+1, false)
+			} else {
+				traverse(child, level+1, true)
+				// finished = append(finished, false)
+			}
+		}
+	}
+
+	for i, child := range t.children {
+		if i != len(t.children)-1 {
+			traverse(child, 1, false)
+		} else {
+			traverse(child, 1, true)
+		}
+
+	}
+
+	return output
 }
