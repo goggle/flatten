@@ -16,7 +16,7 @@ func main() {
 	usage := `flatten.
 
 Usage:
-  flatten [SOURCE] [DESTINATION] [--include-source-files] [-c | --copy-only] [--verbose]
+  flatten [SOURCE] [DESTINATION] [--include-source-files] [-s | --simulate-only] [-c | --copy-only] [--verbose]
   flatten -h | --help
   flatten -v
 
@@ -30,6 +30,8 @@ Options:
   -h --help                 Show this screen.
   -v --version              Show version.
   --include-source-files    Include the files which are directly located in the SOURCE directory.
+  -s --simulate-only        Do not move or copy any files on the system,
+                            just output the expected result.
   -c --copy-only            Do not remove anything from the source directory.
   --verbose                 Explain what is being done.`
 
