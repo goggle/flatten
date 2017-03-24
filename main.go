@@ -78,9 +78,9 @@ Options:
   --include-source-files    Include the files which are directly located in the SOURCE directory.
   -s --simulate-only        Do not move or copy any files on the system,
                             just output the expected result.
+  --verbose                 Explain what is being done.
   -v --version              Show version.
-  -h --help                 Show this screen.
-  --verbose                 Explain what is being done.`
+  -h --help                 Show this screen.`
 
 	arguments, _ := docopt.Parse(usage, nil, true, "flatten "+version, false)
 
