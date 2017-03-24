@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	docopt "github.com/docopt/docopt-go"
 	"github.com/goggle/flatten/filesystem"
@@ -12,7 +13,7 @@ import (
 	"github.com/goggle/flatten/osabstraction"
 )
 
-const version = "0.8"
+const version = "0.8.0"
 
 func ask(question string, defaultYes bool) bool {
 	var defaultString string
@@ -24,13 +25,14 @@ func ask(question string, defaultYes bool) bool {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Printf(question + " " + defaultString + " ")
 	test, _ := reader.ReadString('\n')
+	test = strings.Trim(test, "\n ")
 	if defaultYes {
-		if test == "n" || test == "N" || test == "no" || test == "No" {
+		if test == "n" || test == "N" || test == "no" || test == "No" || test == "NO" {
 			return false
 		}
 		return true
 	}
-	if test == "y" || test == "Y" || test == "yes" || test == "Yes" {
+	if test == "y" || test == "Y" || test == "yes" || test == "Yes" || test == "YES" {
 		return true
 	}
 	return false
@@ -118,39 +120,56 @@ Options:
 	copyOnly := arguments["--copy-only"].(bool)
 	simulateOnly := arguments["--simulate-only"].(bool)
 	force := arguments["--force"].(bool)
+	performSimulation := false
+	askSecondQuestion := true
 
 	sourceFI := osabstraction.File(path.Clean(source))
 	destinationFI := osabstraction.File(path.Clean(destination))
 
+	if simulateOnly {
+		performSimulation = true
+	}
+
+	// Propose to do a simulation first as long we are not in the
+	// "force" or "simulation-only" mode:
 	if !force && !simulateOnly {
-		res := ask("flatten performs changes on the file system. Do you want to simulate this process first?", true)
-		if !res {
-			os.Exit(0)
+		anw := ask("Flatten performs changes on the file system. Do you want to simulate this process first?", true)
+		if anw {
+			performSimulation = true
+		} else {
+			performSimulation = false
+			askSecondQuestion = false
 		}
-		force = true
 	}
 
-	treeString, err := simulate(sourceFI, destinationFI, copyOnly, includeSourceFiles)
-	if err != nil {
-		fmt.Println("Could not simulate the process. The following error occured:")
-		fmt.Println(err)
-		os.Exit(1)
+	if performSimulation {
+		treeString, err := simulate(sourceFI, destinationFI, copyOnly, includeSourceFiles)
+		if err != nil {
+			fmt.Println("Could not simulate the process. The following error occured:")
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		fmt.Printf(treeString)
 	}
 
-	fmt.Printf(treeString)
+	// If we are in "simulation-only" mode, we can exit the program
+	// at this point.
 	if simulateOnly {
 		os.Exit(0)
 	}
 
-	if !force {
-		res := ask("The above changes will be performed. Do you want to continue?", false)
-		if !res {
+	// Ask the user to continue the process as long as we are not in
+	// the "force" mode.
+	if !force && askSecondQuestion {
+		anw := ask("The above changes will be performed. Do you want to continue?", false)
+		if !anw {
 			os.Exit(0)
 		}
 	}
 
+	// Perform the flattening process on the real filesystem:
 	osWrapper := osabstraction.RealOS{}
-	err = flatten.Flatten(sourceFI, destinationFI, osWrapper, copyOnly, includeSourceFiles)
+	err := flatten.Flatten(sourceFI, destinationFI, osWrapper, copyOnly, includeSourceFiles)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		os.Exit(1)
