@@ -117,4 +117,4 @@ If we want to keep the original files in their subdirectories, we can use the `-
 ├── hello_1
 └── hello.c
 ```
-By default, flatten will perform a simulation of its actions first, and ask the user, if he wants to continue.
+By default, flatten will perform a simulation of its actions first, and ask the user, if they want to continue.
