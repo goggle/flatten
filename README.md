@@ -1,7 +1,21 @@
 # flatten
+
 Flatten is a command-line tool to flatten a directory structure.
 
++ [Installation](#installation)
++ [Usage](#usage)
++ [Example](#example)
+
+## Installation
+
+Make sure that you have [Go installed](https://golang.org/dl/), and that you have set up your [Go environment](https://golang.org/doc/code.html#GOPATH).
+
+```
+go get github.com/goggle/flatten
+```
+
 ## Usage
+
 ```
 Usage:
   flatten [SOURCE] [DESTINATION] [-c | --copy-only] [-f | --force] [--include-source-files] [-s | --simulate-only] [--verbose]
@@ -26,7 +40,9 @@ Options:
 ```
 
 ## Example
+
 Assume we have the following directory strcuture in `/home/goggle/example/`:
+
 ```
 /home/goggle/example
 ├── c_progs
@@ -55,6 +71,7 @@ Assume we have the following directory strcuture in `/home/goggle/example/`:
 ```
 
 By running `flatten` in `/home/goggle/example` we get the following result:
+
 ```
 /home/goggle/example
 ├── data_apples_1.txt
@@ -74,9 +91,11 @@ By running `flatten` in `/home/goggle/example` we get the following result:
 ├── hello_1
 └── hello.c
 ```
+
 All the files in the subdirectories of `/home/goggle/example/` have been moved into `/home/goggle/example` and the empty directories have been removed. Note, that no regular file has been removed, even though we have file name collisions (e.g. the file `data_apples.txt` exists four times). Flatten does automatically take care of such filename collisions and adds a number to the filename if such a collision happens.
 
 If we want to keep the original files in their subdirectories, we can use the `--copy-only` option. `flatten -c` or `flatten --copy-only` executed in `/home/goggle/example` will lead to the following result:
+
 ```
 /home/goggle/example
 ├── c_progs
@@ -117,4 +136,5 @@ If we want to keep the original files in their subdirectories, we can use the `-
 ├── hello_1
 └── hello.c
 ```
+
 By default, flatten will perform a simulation of its actions first, and ask the user, if they want to continue.
